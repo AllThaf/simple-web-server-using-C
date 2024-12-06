@@ -1,7 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#define PORT 8080
+#define PORT 8000
 #define BUFFER_SIZE 104857600 
 #define SRC_DIR "./src/"
 
