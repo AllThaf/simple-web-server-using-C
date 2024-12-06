@@ -65,7 +65,6 @@ int main(){
     } else {
       // Parent process
       close(*client_fd);
-      free(client_fd);
     }
   }
 

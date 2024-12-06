@@ -55,6 +55,10 @@ char *url_decode(const char *src){
       decoded[decoded_len++] = src[i];
     }
   }
+
+  // Menambahkan NULL terminator
+  decoded[decoded_len] = '\0';
+  return decoded;
 }
 
 

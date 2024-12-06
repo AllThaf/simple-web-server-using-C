@@ -48,8 +48,9 @@ void build_http_response(const char *file_name, const char *file_ext, char *resp
 
   // Copy file ke response buffer
   ssize_t bytes_read;
-  while ((bytes_read = read(file_fd, response + *response_len, BUFFER_SIZE - *response_len)) > 0)
+  while ((bytes_read = read(file_fd, response + *response_len, BUFFER_SIZE - *response_len)) > 0) {
     *response_len += bytes_read;
+  }
 
   free(header);
   close(file_fd);
@@ -57,7 +58,6 @@ void build_http_response(const char *file_name, const char *file_ext, char *resp
 
 void *handle_client(void *arg){
   int client_fd = *((int *)arg);
-  free(arg);
   char *buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));
 
   // Menerima request data dari client dan menyimpannya kedalam buffer
