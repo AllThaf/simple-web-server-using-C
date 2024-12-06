@@ -12,7 +12,7 @@ int main(){
   struct sockaddr_in server_addr;
 
   // Membuat server socket
-  if ((server_fd = socket(AF_INET, SOC_STREAM, 0)) < 0) {
+  if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     perror("Gagal membuat socket");
     exit(EXIT_FAILURE);
   }
@@ -59,14 +59,13 @@ int main(){
     } else if (pid == 0) {
       // Child process untuk meng-handle client
       close(server_fd);
-      handle_client(*client_fd);
+      handle_client((void *)client_fd);
       free(client_fd);
       exit(0);
     } else {
       // Parent process
       close(*client_fd);
       free(client_fd);
-      wait(NULL);
     }
   }
 

@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <fnctl.h>
+#include <fcntl.h>
 #include <string.h>
 #include <string.h>
 #include <stdlib.h>
