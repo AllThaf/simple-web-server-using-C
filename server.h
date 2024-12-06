@@ -2,6 +2,8 @@
 #define SERVER_H
 
 #define PORT 8080
+#define BUFFER_SIZE 104857600 
+#define SRC_DIR "./src/"
 
 /*!
  * Untuk mengembalikan respon kepada pengguna dengan membaca file HTML yang ada
