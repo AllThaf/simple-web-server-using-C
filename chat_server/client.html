@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #007BFF;
+        }
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: calc(100% - 100px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            height: 300px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Chat</h1>
+    <div class="chat-container">
+        <input type="text" id="usernameInput" placeholder="Masukkan username">
+        <button onclick="setUsername()">Lakukan Koneksi!</button>
+        <br>
+        <input type="text" id="messageInput" placeholder="Masukkan pesan">
+        <button onclick="sendMessage()">Kirim</button>
+        <button onclick="disconnect()">Disconnect</button>
+        <pre id="output"></pre>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 WebSocket Chat | Nieto Salim Maula</p>
+    </div>
+    <script>
+        let ws;
+        let username = "";
+        const output = document.getElementById('output');
+
+        function setUsername() {
+            username = document.getElementById('usernameInput').value;
+            if (username.trim() === "") {
+                output.textContent += "❌ Username tidak boleh kosong!\n";
+                return;
+            }
+
+            ws = new WebSocket('ws://localhost:8080');
+            ws.onopen = () => {
+                output.textContent += '🔗 Terhubung ke server\n';
+                ws.send(username);
+            };
+            ws.onmessage = (event) => {
+                output.textContent += `💬 ${event.data}\n`;
+            };
+            ws.onclose = () => {
+                output.textContent += '🚪 Terputus dari server\n';
+            };
+            ws.onerror = (error) => {
+                output.textContent += `⚠️ Kesalahan WebSocket: ${error.message}\n`;
+            };
+        }
+
+        function sendMessage() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                output.textContent += '❗ Koneksi belum dibuka. Masukkan username terlebih dahulu.\n';
+                return;
+            }
+            const message = document.getElementById('messageInput').value;
+            if (message.trim() === "") {
+                output.textContent += "❌ Pesan tidak boleh kosong!\n";
+                return;
+            }
+            ws.send(message);
+            output.textContent += `📤 Dikirim: ${message}\n`;
+        }
+
+        function disconnect() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close();
+                output.textContent += '🚫 Koneksi diputuskan.\n';
+            } else {
+                output.textContent += '❗ Tidak ada koneksi yang aktif.\n';
+            }
+        }
+    </script>
+</body>
+</html>
+

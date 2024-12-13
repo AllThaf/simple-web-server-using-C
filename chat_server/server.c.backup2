@@ -1,0 +1,132 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <openssl/sha.h>
+#include <stdint.h>
+#include <ctype.h>
+
+#define PORT 8080
+#define BUFFER_SIZE 1024
+
+void base64_encode(const uint8_t *input, size_t len, char *output) {
+    const char *base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    int i, j;
+    for (i = 0, j = 0; i < len;) {
+        uint32_t octet_a = i < len ? input[i++] : 0;
+        uint32_t octet_b = i < len ? input[i++] : 0;
+        uint32_t octet_c = i < len ? input[i++] : 0;
+
+        uint32_t triple = (octet_a << 16) | (octet_b << 8) | octet_c;
+
+        output[j++] = base64_chars[(triple >> 18) & 0x3F];
+        output[j++] = base64_chars[(triple >> 12) & 0x3F];
+        output[j++] = (i > len + 1) ? '=' : base64_chars[(triple >> 6) & 0x3F];
+        output[j++] = (i > len) ? '=' : base64_chars[triple & 0x3F];
+    }
+    output[j] = '\0';
+}
+
+void handle_client(int client_socket) {
+    char buffer[BUFFER_SIZE];
+    recv(client_socket, buffer, BUFFER_SIZE, 0);
+
+    // Find Sec-WebSocket-Key
+    char *key_start = strstr(buffer, "Sec-WebSocket-Key: ");
+    if (!key_start) {
+        close(client_socket);
+        return;
+    }
+    key_start += strlen("Sec-WebSocket-Key: ");
+    char *key_end = strstr(key_start, "\r\n");
+    char key[128] = {0};
+    strncpy(key, key_start, key_end - key_start);
+
+    // Concatenate magic string
+    strcat(key, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+
+    // SHA1 hash
+    uint8_t hash[SHA_DIGEST_LENGTH];
+    SHA1((unsigned char *)key, strlen(key), hash);
+
+    // Base64 encode
+    char accept_key[128];
+    base64_encode(hash, SHA_DIGEST_LENGTH, accept_key);
+
+    // Send WebSocket handshake response
+    char response[BUFFER_SIZE];
+    snprintf(response, sizeof(response),
+             "HTTP/1.1 101 Switching Protocols\r\n"
+             "Upgrade: websocket\r\n"
+             "Connection: Upgrade\r\n"
+             "Sec-WebSocket-Accept: %s\r\n\r\n",
+             accept_key);
+    send(client_socket, response, strlen(response), 0);
+
+    printf("Client connected via WebSocket!\n");
+
+    while (1) {
+        memset(buffer, 0, BUFFER_SIZE);
+        int bytes_received = recv(client_socket, buffer, BUFFER_SIZE, 0);
+        if (bytes_received <= 0) break;
+
+        printf("Received message: %s\n", buffer);
+
+        // Echo the message back to the client
+        send(client_socket, buffer, bytes_received, 0);
+    }
+
+    close(client_socket);
+}
+
+int main() {
+    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket == -1) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(PORT);
+
+    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Bind failed");
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
+    if (listen(server_socket, 10) < 0) {
+        perror("Listen failed");
+        close(server_socket);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Server running on port %d...\n", PORT);
+
+    while (1) {
+        struct sockaddr_in client_addr;
+        socklen_t addr_len = sizeof(client_addr);
+        int client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &addr_len);
+        if (client_socket < 0) {
+            perror("Client accept failed");
+            continue;
+        }
+
+        if (fork() == 0) {
+            // Child process
+            close(server_socket);
+            handle_client(client_socket);
+            exit(0);
+        } else {
+            // Parent process
+            close(client_socket);
+        }
+    }
+
+    close(server_socket);
+    return 0;
+}
+

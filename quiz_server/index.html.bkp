@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Client</title>
+</head>
+<body>
+    <h1>Quiz Client</h1>
+    <div id="quiz-area">
+        <form id="quiz-form">
+            <label id="question"></label><br>
+            <input type="text" id="answer" placeholder="Enter your answer (A/B/C/D)" required>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    <div id="score-area" style="display: none;">
+        <h2 id="score"></h2>
+    </div>
+    <script>
+        const socket = new WebSocket('ws://localhost:8000');
+        const questionLabel = document.getElementById('question');
+        const answerInput = document.getElementById('answer');
+        const quizForm = document.getElementById('quiz-form');
+        const quizArea = document.getElementById('quiz-area');
+        const scoreArea = document.getElementById('score-area');
+        const scoreLabel = document.getElementById('score');
+
+        socket.onmessage = (event) => {
+            if (event.data.startsWith("Quiz finished!")) {
+                quizArea.style.display = 'none';
+                scoreArea.style.display = 'block';
+                scoreLabel.textContent = event.data;
+            } else {
+                questionLabel.textContent = event.data;
+            }
+        };
+
+        quizForm.onsubmit = (e) => {
+            e.preventDefault();
+            socket.send(answerInput.value.toUpperCase());
+            answerInput.value = '';
+        };
+    </script>
+</body>
+</html>
+

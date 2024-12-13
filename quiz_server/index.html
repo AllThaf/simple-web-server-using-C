@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Client</title>
+</head>
+<body>
+    <h1>Quiz Client</h1>
+    <label for="name">Enter your name:</label>
+    <input type="text" id="name" required>
+    <button onclick="connect()">Connect</button>
+    <div id="chat"></div>
+    <input type="text" id="message" placeholder="Type a message..." disabled>
+    <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
+    <script>
+        let socket;
+        function connect() {
+            const name = document.getElementById('name').value.trim();
+            if (!name) {
+                alert("Please enter your name");
+                return;
+            }
+            socket = new WebSocket('ws://localhost:8000');
+            socket.onopen = () => {
+                socket.send(name);
+                document.getElementById('message').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+            };
+            socket.onmessage = (event) => {
+                const chat = document.getElementById('chat');
+                chat.innerHTML += `<p>${event.data}</p>`;
+            };
+            socket.onclose = () => {
+                alert("Disconnected from the server");
+            };
+        }
+        function sendMessage() {
+            const message = document.getElementById('message').value.trim();
+            if (message && socket.readyState === WebSocket.OPEN) {
+                socket.send(message);
+                document.getElementById('message').value = '';
+            }
+        }
+    </script>
+</body>
+</html>
+

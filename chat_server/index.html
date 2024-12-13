@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chat Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+        }
+        #chat-box {
+            width: 90%;
+            max-width: 600px;
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #message {
+            width: 75%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #send-btn {
+            padding: 10px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #send-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Room</h1>
+    <div id="chat-box"></div>
+    <input type="text" id="message" placeholder="Type your message...">
+    <button id="send-btn">Send</button>
+
+    <script>
+        let ws;
+        const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message');
+        const sendBtn = document.getElementById('send-btn');
+
+        function connect() {
+            ws = new WebSocket('ws://localhost:8080');
+
+            ws.onopen = () => {
+                chatBox.innerHTML += '<p><em>Connected to the server.</em></p>';
+            };
+
+            ws.onmessage = (event) => {
+                chatBox.innerHTML += `<p>${event.data}</p>`;
+                chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the bottom
+            };
+
+            ws.onclose = () => {
+                chatBox.innerHTML += '<p><em>Disconnected from the server.</em></p>';
+            };
+
+            ws.onerror = (error) => {
+                chatBox.innerHTML += `<p><em>Error: ${error.message}</em></p>`;
+            };
+        }
+
+        sendBtn.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(message);
+                messageInput.value = '';
+            } else {
+                chatBox.innerHTML += '<p><em>Cannot send message. Please connect to the server first.</em></p>';
+            }
+        });
+
+        // Connect to the server on page load
+        connect();
+    </script>
+</body>
+</html>
