@@ -17,18 +17,22 @@ void handle_http_request(int client_socket, char *request) {
       printf("Data received: %s\n", body);
 
       // Validasi dan hitung skor
-      char playerName[100], q1[100], q2[100], q3[100], q4[100], q5[100];
+      char playerName[100], q1[100], q2[100], q3[100], q4[100], q5[100], q6[100], q7[100], q8[100], q9[100], q10[100];
       int score = 0;
 
-      sscanf(body, "playerName=%[^&]&q1=%[^&]&q2=%[^&]&q3=%[^&]&q4=%[^&]&q5=%s",
-            playerName, q1, q2, q3, q4, q5);
+      sscanf(body, "playerName=%[^&]&q1=%[^&]&q2=%[^&]&q3=%[^&]&q4=%[^&]&q5=%s&q6=%s&q7=%s&q8=%s&q9=%s&q10=%s",
+            playerName, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10);
 
       if (strcmp(q1, "4") == 0) score += 10; // Jawaban benar: 4
-      if (strcmp(q2, "paris") == 0) score += 10; // Jawaban benar: paris
+      if (strcmp(q2, "Paris") == 0) score += 10; // Jawaban benar: Paris
       if (strcmp(q3, "4") == 0) score += 10; // Jawaban benar: 4
-      if (strcmp(q4, "shakespeare") == 0) score += 10; // Jawaban benar: shakespeare
+      if (strcmp(q4, "Australia") == 0) score += 10; // Jawaban benar: Australia
       if (strcmp(q5, "30") == 0) score += 10; // Jawaban benar: 30
-
+      if (strcmp(q6, "Soekarno") == 0) score += 10; // Jawaban benar: Sukarno
+      if (strcmp(q7, "Tokyo") == 0) score += 10; // Jawaban benar: Tokyo
+      if (strcmp(q8, "Everest") == 0) score += 10; // Jawaban benar: Mount Everest
+      if (strcmp(q9, "Merkurius") == 0) score += 10; // Jawaban benar: Mercury
+      if (strcmp(q10, "Jawa") == 0) score += 10; // Jawaban benar: Jawa
       printf("Player: %s, Score: %d\n", playerName, score);
 
       // Kirim respons ke klien
