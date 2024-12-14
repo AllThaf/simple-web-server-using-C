@@ -1,20 +1,17 @@
 CC=gcc
 CFLAGS=-I.
 
-all: server
+all: parse
 
 clean: 
 			@rm -rf *.o
 			@rm -rf server
 
-server: main.o server.o file.o
-				$(CC) -o server $^
+parse: main.o parsing.o
+				$(CC) -o parse $^
 
-main.o: main.c server.h
+main.o: main.c parsing.h
 				$(CC) -c -o main.o main.c
 
-server.o: server.c server.h file.h
-					$(CC) -c -o server.o server.c
-
-file.o: file.c file.h
-				$(CC) -c -o file.o file.c
+parsing.o: parsing.c parsing.h
+					$(CC) -c -o parsing.o parsing.c
