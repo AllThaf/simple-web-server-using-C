@@ -1,73 +1,60 @@
-#include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
+#include <stdio.h> // fclose, FILE, fopen, fread, perror, printf, sprintf, sscanf
+#include <stdlib.h> // exit, free, malloc
+#include <string.h> // bzero, strlen, strncmp, strstr
+#include <unistd.h> // close, read, write
+#include <netinet/in.h> // sockaddr_in
+#include <sys/socket.h> // accept, bind, listen, setsockopt, socket, socklen_t
 
-#include "server.h"
+#include "parsing.h"
 
-int main(){
-  int server_fd;
-  struct sockaddr_in server_addr;
+int main() {
+  int server_sock, client_sock;
+  socklen_t cli_len;
+  struct sockaddr_in serv_addr, cli_addr;
+  char buffer[BUFFER_SIZE];
 
-  // Membuat server socket
-  if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-    perror("Gagal membuat socket");
+  // Inisialisasi server socket
+  server_sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (server_sock < 0) {
+    perror("ERROR opening socket");
     exit(EXIT_FAILURE);
   }
 
-  // Konfigurasi socket
-  server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = INADDR_ANY;
-  server_addr.sin_port = htons(PORT);
+  bzero((char *)&serv_addr, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_addr.s_addr = INADDR_ANY;
+  serv_addr.sin_port = htons(PORT);
 
-  // Bind socet ke port
-  if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-    perror("Bind gagal");
+  if (bind(server_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    perror("ERROR on binding");
     exit(EXIT_FAILURE);
   }
 
-  // Listen connections
-  if (listen(server_fd, 10) < 0) {
-    perror("Listen gagal");
+  if (listen(server_sock, 5) < 0){
+    perror("ERROR on listen");
     exit(EXIT_FAILURE);
   }
+  cli_len = sizeof(cli_addr);
 
-  printf("Server listening on PORT: %d\n", PORT);
-
+  printf("Server is listening on port %d\n", PORT);
   while (1) {
-    // Info client
-    struct sockaddr_in client_addr;
-    socklen_t client_addr_len = sizeof(client_addr);
-    int *client_fd = malloc(sizeof(int));
-
-    // Accept koneksi dari client
-    if ((*client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len)) < 0) {
-      perror("Accept gagal");
-      exit(EXIT_FAILURE);
-    }
-
-    // Membuat fork() untuk melakukan handle client
-    pid_t pid = fork();
-
-    if (pid < 0) {
-      perror("Fork gagal");
-      close(*client_fd);
-      free(client_fd);
+    client_sock = accept(server_sock, (struct sockaddr *)&cli_addr, &cli_len);
+    if (client_sock < 0) {
+      perror("ERROR on accept");
       continue;
-    } else if (pid == 0) {
-      // Child process untuk meng-handle client
-      close(server_fd);
-      handle_client((void *)client_fd);
-      free(client_fd);
-      exit(0);
-    } else {
-      // Parent process
-      close(*client_fd);
     }
+
+    if (fork() == 0) {
+      close(server_sock);
+      bzero(buffer, BUFFER_SIZE);
+      read(client_sock, buffer, sizeof(buffer) - 1);
+      handle_http_request(client_sock, buffer);
+      close(client_sock);
+      exit(0);
+    }
+    close(client_sock);
   }
 
-  close(server_fd);
+  close(server_sock);
   return 0;
 }
