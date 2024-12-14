@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .quiz-section {
+            border-right: 1px solid #ddd;
+            padding-right: 30px;
+        }
+        .mobile-only {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .quiz-section {
+                border-right: none;
+                padding-right: 0;
+            }
+            .mobile-only {
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 quiz-section">
+                <h1 class="text-primary text-center">Selamat Datang di Kuis Interaktif! <i class="fas fa-grin-stars"></i></h1>
+                <p class="text-muted text-center">Uji pengetahuanmu dan dapatkan skor terbaik!</p>
+            </div>
+            <div class="col-lg-6">
+                <form id="quizForm" method="POST">
+                    <div class="mb-3">
+                        <label for="playerName" class="form-label">Nama:</label>
+                        <input type="text" id="playerName" name="playerName" class="form-control" placeholder="Masukkan nama Anda" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <p><strong>1. Berapa hasil dari 2 + 2?</strong></p>
+                        <input type="text" id="q1" name="q1" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <p><strong>2. Apa ibu kota Prancis?</strong></p>
+                        <input type="text" id="q2" name="q2" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <p><strong>3. Berapa akar kuadrat dari 16?</strong></p>
+                        <input type="text" id="q3" name="q3" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <p><strong>4. Siapa yang menulis "Romeo dan Juliet"?</strong></p>
+                        <input type="text" id="q4" name="q4" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <p><strong>5. Berapa hasil dari 5 x 6?</strong></p>
+                        <input type="text" id="q5" name="q5" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Kirim Jawaban <i class="fas fa-paper-plane"></i></button>
+                </form>
+
+                <div id="output" class="alert alert-info mt-4 d-none" role="alert"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById("quizForm");
+        form.onsubmit = async (e) => {
+            e.preventDefault(); // Mencegah refresh halaman setelah submit
+            const formData = new FormData(form);
+
+            // Validasi sederhana: pastikan semua jawaban terisi
+            for (let [key, value] of formData.entries()) {
+                if (!value.trim()) {
+                    alert("Semua jawaban harus diisi!");
+                    return;
+                }
+            }
+
+            const data = new URLSearchParams(formData).toString();
+            const outputDiv = document.getElementById("output");
+
+            try {
+                const response = await fetch("/", {
+                    method: "POST",
+                    body: data,
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                });
+                const result = await response.text();
+                outputDiv.textContent = result;
+                outputDiv.classList.remove("d-none", "alert-info");
+                outputDiv.classList.add("alert-success");
+            } catch (error) {
+                console.error("Error:", error);
+                outputDiv.textContent = "Error: " + error.message;
+                outputDiv.classList.remove("d-none", "alert-success");
+                outputDiv.classList.add("alert-danger");
+            }
+        };
+    </script>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
