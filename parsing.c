@@ -20,7 +20,7 @@ void handle_http_request(int client_socket, char *request) {
       char playerName[100], q1[100], q2[100], q3[100], q4[100], q5[100], q6[100], q7[100], q8[100], q9[100], q10[100];
       int score = 0;
 
-      sscanf(body, "playerName=%[^&]&q1=%[^&]&q2=%[^&]&q3=%[^&]&q4=%[^&]&q5=%s&q6=%s&q7=%s&q8=%s&q9=%s&q10=%s",
+      sscanf(body, "playerName=%[^&]&q1=%[^&]&q2=%[^&]&q3=%[^&]&q4=%[^&]&q5=%[^&]&q6=%[^&]&q7=%[^&]&q8=%[^&]&q9=%[^&]&q10=%s",
             playerName, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10);
 
       if (strcmp(q1, "4") == 0) score += 10; // Jawaban benar: 4
