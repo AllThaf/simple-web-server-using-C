@@ -22,7 +22,7 @@ Adapun fitur yang dibuat oleh kami dalam web-server yang telah dibuat, diantaran
 git clone https://github.com/AllThaf/simple-web-server-using-C.git
 ```
 
-2. Buka repository yang sudah di-clone tali. Lalu, jalankan file Makefile
+2. Buka repository yang sudah di-clone tadi. Lalu, jalankan file Makefile
 
 ```sh
 make
