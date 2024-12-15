@@ -14,8 +14,7 @@ int main() {
   char buffer[BUFFER_SIZE];
 
   // Inisialisasi server socket
-  server_sock = socket(AF_INET, SOCK_STREAM, 0);
-  if (server_sock < 0) {
+  if ((server_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
     perror("ERROR opening socket");
     exit(EXIT_FAILURE);
   }
