@@ -40,7 +40,6 @@ extern void handle_request_getscore(int client_socket, char *response);
 * @param client_socket Mewakili soket komunikasi antara server dan client
 * @param *response Buffer untuk mentimpan reson HTTP yang akan dikirimkan
 */
-
 extern void handle_request_get(int client_socket, char *response);
 
 #endif // !PARSING_H
